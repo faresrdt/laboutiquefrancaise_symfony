@@ -1,0 +1,60 @@
+/** GENERAL **/
+body{
+    padding-bottom: 0;
+}
+.container{
+    min-height: 500px;
+}
+
+/** NAVBAR **/
+.navbar-item-custom, .navbar-item-custom a{
+    color: #FFFFFF;
+}
+
+
+/** PRODUCTS **/
+
+.product-item{
+    margin-top: 50px;
+}
+
+.product-item h5{
+    text-transform: uppercase;
+    font-size: 15px;
+    margin-bottom: 0;
+}
+
+.product-subtitle{
+    font-size: 14px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.product-container{
+    margin-bottom: 20px;
+}
+
+.product-price{
+    font-size: 15px;
+    font-weight: bold;
+}
+
+/** SINGLE PRODUCT **/
+.product-page-price{
+    font-size: 20px;
+}
+
+/** FOOTER **/
+.footer-custom{
+    text-align: center;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    background-color: #DFEAFF;
+    padding-top: 25px;
+}
+
+footer > p{
+    margin-bottom: 0;
+
+}
