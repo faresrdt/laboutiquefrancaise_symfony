@@ -6,7 +6,7 @@ namespace Doctrine\Migrations\Metadata\Storage;
 
 use DateTimeImmutable;
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Connections\MasterSlaveConnection;
+use Doctrine\DBAL\Connections\PrimaryReadReplicaConnection;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\DBAL\Schema\Comparator;
@@ -26,6 +26,7 @@ use InvalidArgumentException;
 
 use function array_change_key_case;
 use function floatval;
+use function method_exists;
 use function round;
 use function sprintf;
 use function strlen;
@@ -37,10 +38,16 @@ use const CASE_LOWER;
 
 final class TableMetadataStorage implements MetadataStorage
 {
+    /** @var bool */
+    private $isInitialized;
+
+    /** @var bool */
+    private $schemaUpToDate = false;
+
     /** @var Connection */
     private $connection;
 
-    /** @var AbstractSchemaManager */
+    /** @var AbstractSchemaManager<AbstractPlatform> */
     private $schemaManager;
 
     /** @var AbstractPlatform */
@@ -81,7 +88,7 @@ final class TableMetadataStorage implements MetadataStorage
         }
 
         $this->checkInitialization();
-        $rows = $this->connection->fetchAll(sprintf('SELECT * FROM %s', $this->configuration->getTableName()));
+        $rows = $this->connection->fetchAllAssociative(sprintf('SELECT * FROM %s', $this->configuration->getTableName()));
 
         $migrations = [];
         foreach ($rows as $row) {
@@ -118,7 +125,7 @@ final class TableMetadataStorage implements MetadataStorage
     {
         $this->checkInitialization();
 
-        $this->connection->executeUpdate(
+        $this->connection->executeStatement(
             sprintf(
                 'DELETE FROM %s WHERE 1 = 1',
                 $this->platform->quoteIdentifier($this->configuration->getTableName())
@@ -152,23 +159,35 @@ final class TableMetadataStorage implements MetadataStorage
         if (! $this->isInitialized()) {
             $expectedSchemaChangelog = $this->getExpectedTable();
             $this->schemaManager->createTable($expectedSchemaChangelog);
+            $this->schemaUpToDate = true;
+            $this->isInitialized  = true;
 
             return;
         }
 
+        $this->isInitialized     = true;
         $expectedSchemaChangelog = $this->getExpectedTable();
         $diff                    = $this->needsUpdate($expectedSchemaChangelog);
         if ($diff === null) {
+            $this->schemaUpToDate = true;
+
             return;
         }
 
+        $this->schemaUpToDate = true;
         $this->schemaManager->alterTable($diff);
         $this->updateMigratedVersionsFromV1orV2toV3();
     }
 
     private function needsUpdate(Table $expectedTable): ?TableDiff
     {
-        $comparator   = new Comparator();
+        if ($this->schemaUpToDate) {
+            return null;
+        }
+
+        $comparator   = method_exists($this->schemaManager, 'createComparator') ?
+            $this->schemaManager->createComparator() :
+            new Comparator();
         $currentTable = $this->schemaManager->listTableDetails($this->configuration->getTableName());
         $diff         = $comparator->diffTable($currentTable, $expectedTable);
 
@@ -177,8 +196,12 @@ final class TableMetadataStorage implements MetadataStorage
 
     private function isInitialized(): bool
     {
-        if ($this->connection instanceof MasterSlaveConnection) {
-            $this->connection->connect('master');
+        if ($this->isInitialized) {
+            return $this->isInitialized;
+        }
+
+        if ($this->connection instanceof PrimaryReadReplicaConnection) {
+            $this->connection->ensureConnectedToPrimary();
         }
 
         return $this->schemaManager->tablesExist([$this->configuration->getTableName()]);

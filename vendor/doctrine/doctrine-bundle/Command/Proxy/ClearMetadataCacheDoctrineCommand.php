@@ -7,6 +7,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+use function sprintf;
+use function trigger_error;
+
+use const E_USER_DEPRECATED;
+
 /**
  * Command to clear the metadata cache of the various cache drivers.
  *
@@ -23,8 +28,13 @@ class ClearMetadataCacheDoctrineCommand extends MetadataCommand
 
         $this
             ->setName('doctrine:cache:clear-metadata')
-            ->setDescription('Clears all metadata cache for an entity manager')
-            ->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
+            ->setDescription('Clears all metadata cache for an entity manager');
+
+        if ($this->getDefinition()->hasOption('em')) {
+            return;
+        }
+
+        $this->addOption('em', null, InputOption::VALUE_OPTIONAL, 'The entity manager to use for this command');
     }
 
     /**
