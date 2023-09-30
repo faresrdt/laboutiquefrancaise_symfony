@@ -27,8 +27,9 @@ cd votre-projet
 Copiez le fichier .env vers un nouveau fichier .env.local.
 Modifiez la ligne DATABASE_URL dans le fichier .env.local pour correspondre à votre configuration de base de données locale.
 
+```bash
 DATABASE_URL=mysql://user:password@localhost:3306/db_name
-
+```
 ## Création de la Base de Données et Importation de la Structure :
 
 Copier ces lignes l'une après l'autre pour créer la base de donnée et importer la structure
