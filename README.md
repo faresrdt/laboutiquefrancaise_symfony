@@ -18,12 +18,12 @@ Ce site est une représentation concrète de ce que je suis désormais capable d
 
 # Technologie Utilisée
 
-**Front-end :** HTML, CSS, JavaScript.
-**Back-end :** Symfony 5, PHP.
-**Base de données :** MySQL.
-**Administration :** EasyAdmin 3.
-**Gestion des dépendances :** Composer pour PHP, Yarn pour JavaScript.
-**Versioning :** Git et GitHub.
+**- Front-end :** HTML, CSS, JavaScript.
+**- Back-end :** Symfony 5, PHP.
+**- Base de données :** MySQL.
+**- Administration :** EasyAdmin 3.
+**- Gestion des dépendances :** Composer pour PHP, Yarn pour JavaScript.
+**- Versioning :** Git et GitHub.
 
 # Installation
 
